@@ -1,3 +1,0 @@
-C:/Users/HetHo/Desktop/WoWRPC/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/HetHo/Desktop/WoWRPC/build/CMakeFiles/ZERO_CHECK.dir
-C:/Users/HetHo/Desktop/WoWRPC/build/src/CMakeFiles/WoWRPC.dir
