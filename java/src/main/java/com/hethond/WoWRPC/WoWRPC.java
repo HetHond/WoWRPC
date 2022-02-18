@@ -1,6 +1,9 @@
 package com.hethond.WoWRPC;
 
 import com.hethond.WoWRPC.data.Player;
+import net.arikia.dev.drpc.DiscordEventHandlers;
+import net.arikia.dev.drpc.DiscordRPC;
+import net.arikia.dev.drpc.DiscordRichPresence;
 
 import java.awt.*;
 
@@ -11,15 +14,31 @@ public class WoWRPC {
     boolean running = true;
 
     private boolean checkSafeArea() {
-        boolean BottomRight = robot.getPixelColor(50, 50).getRGB() == 0x126745;
-        boolean BottomLeft = robot.getPixelColor(0, 50).getRGB() == 0x126745;
-        boolean TopRight = robot.getPixelColor(50, 0).getRGB() == 0x126745;
-        return BottomRight && BottomLeft && TopRight;
+        boolean TopLeft = robot.getPixelColor(0, 0).getRGB() == 0x126745;
+        boolean TopRight = robot.getPixelColor(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getWidth(), 0).getRGB() == 0x126745;
+        return TopLeft && TopRight;
+    }
+
+    private void initializePresence() {
+        DiscordEventHandlers handlers = new DiscordEventHandlers.Builder().setReadyEventHandler((user) -> {
+            System.out.println("Welcome " + user.username + "#" + user.discriminator + "!");
+        }).build();
+        DiscordRPC.discordInitialize("943996046504243202", handlers, true);
+    }
+
+    private void destroyPresence() {
+        DiscordRPC.discordShutdown();
+    }
+
+    private void updatePresence() {
+        DiscordRPC.discordRunCallbacks();
     }
 
     private void start() {
+        initializePresence();
         while (running) {
             if (!checkSafeArea()) continue;
+            System.out.println(System.nanoTime());
 
             Color lenPixel = robot.getPixelColor(0, 0);
             int pixels = lenPixel.getRGB() & 0x0000ff;
@@ -36,10 +55,18 @@ public class WoWRPC {
                 if (bytesLeft-- > 0) bytes[byteIndex++] = (byte) pixel.getGreen();
                 if (bytesLeft-- > 0) bytes[byteIndex++] = (byte) pixel.getBlue();
             }
+
+            updatePresence();
         }
+        destroyPresence();
     }
 
     public WoWRPC() {
-
+        try {
+            this.robot = new Robot();
+            start();
+        } catch (AWTException e) {
+            e.printStackTrace();
+        }
     }
 }
