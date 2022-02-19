@@ -134,7 +134,7 @@ Player -
         MaxHealth : Int;
     Realm : String;
     Target : Unit;
-    Position : Double[3];
+    Position : Double[2];
     ZoneText : String;
 
 ]]
@@ -154,6 +154,12 @@ function addPlayer(player)
     local position = C_Map.GetPlayerMapPosition(uiMapID, player);
     local x, y = position:GetXY();
     addDouble(x); addDouble(y);
+    if player == "player" then
+      addByte(0xF);
+      addString(GetRealZoneText());
+    else
+      addByte(0x0);
+    end
 end
 
 pixelFrame:SetScript("OnUpdate", function(self, elapsed)
@@ -163,12 +169,12 @@ pixelFrame:SetScript("OnUpdate", function(self, elapsed)
     local curPixelIndex = 1;
     local pixelBytes = {};
     for i, v in ipairs(bytes) do
-        if bLeftInPixel <= 0 then 
+        if bLeftInPixel <= 0 then
             SetPixel(curPixelIndex, string.byte(pixelBytes[1])/255, string.byte(pixelBytes[2])/255, string.byte(pixelBytes[3])/255);
             pixelBytes = {};
             curPixelIndex = curPixelIndex + 1;
             bLeftInPixel = 3;
-        else 
+        else
             pixelBytes[#pixelBytes+1] = v;
             bLeftInPixel = bLeftInPixel - 1;
         end

@@ -7,15 +7,19 @@ public class PixelDecoder {
 
     public PixelDecoder(Robot robot) { this.robot = robot; }
 
+    public int pixelIndex;
+    private Color curPixel;
+    private byte bLeftInPixel;
     public byte nextPixel() {
+        if (bLeftInPixel <= 0) {
+            pixelIndex++;
+            curPixel = robot.getPixelColor(pixelIndex, 0);
+        }
 
+        return (byte) ((curPixel.getRGB() & 0xFF) >> (8 * (bLeftInPixel-1)));
     }
-
-    public int curByteIndex = 0;
     public void readPixels() {
-        this.curByteIndex = 0;
-    }
-
-    public String readString(byte[] bytes) {
+        this.pixelIndex = 0;
+        System.out.println(nextPixel());
     }
 }

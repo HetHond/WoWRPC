@@ -1,21 +1,28 @@
 package com.hethond.WoWRPC;
 
 import com.hethond.WoWRPC.data.Player;
+import com.hethond.WoWRPC.util.PixelDecoder;
 import net.arikia.dev.drpc.DiscordEventHandlers;
 import net.arikia.dev.drpc.DiscordRPC;
 import net.arikia.dev.drpc.DiscordRichPresence;
 
 import java.awt.*;
+import java.util.HexFormat;
 
 public class WoWRPC {
     private Robot robot;
     private Player player;
 
+    private PixelDecoder decoder;
+
     boolean running = true;
 
     private boolean checkSafeArea() {
-        boolean TopLeft = robot.getPixelColor(0, 0).getRGB() == 0x126745;
-        boolean TopRight = robot.getPixelColor(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getWidth(), 0).getRGB() == 0x126745;
+        boolean TopLeft = (robot.getPixelColor(100, 0).getRGB() & 0xFFFFFF) == 0x126745;
+        boolean TopRight = (robot.getPixelColor(GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode().getWidth(), 0).getRGB() == 0x126745);
+
+        String hex = "0x" + HexFormat.of().toHexDigits(robot.getPixelColor(100, 0).getRGB());
+        System.out.println(hex);
         return TopLeft && TopRight;
     }
 
@@ -37,24 +44,15 @@ public class WoWRPC {
     private void start() {
         initializePresence();
         while (running) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             if (!checkSafeArea()) continue;
             System.out.println(System.nanoTime());
 
-            Color lenPixel = robot.getPixelColor(0, 0);
-            int pixels = lenPixel.getRGB() & 0x0000ff;
-            int bytesLeft = (lenPixel.getRGB() >> 8) & 0xffff00;
-
-
-            int curX = 1, curY = 0, maxX = 45;
-
-            int byteIndex = 0;
-            byte[] bytes = new byte[bytesLeft];
-            for (int i = 0; i < pixels; i++) {
-                Color pixel = robot.getPixelColor(curX, curY);
-                if (bytesLeft-- > 0) bytes[byteIndex++] = (byte) pixel.getRed();
-                if (bytesLeft-- > 0) bytes[byteIndex++] = (byte) pixel.getGreen();
-                if (bytesLeft-- > 0) bytes[byteIndex++] = (byte) pixel.getBlue();
-            }
+            this.decoder.readPixels();
 
             updatePresence();
         }
@@ -64,6 +62,7 @@ public class WoWRPC {
     public WoWRPC() {
         try {
             this.robot = new Robot();
+            this.decoder = new PixelDecoder(robot);
             start();
         } catch (AWTException e) {
             e.printStackTrace();
