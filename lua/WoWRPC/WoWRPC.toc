@@ -1,0 +1,6 @@
+## Interface: 90105
+## Title: WoWRPC
+## Notes: Improved Discord rich presence for WoW
+## Version: 1.0
+
+WoWRPC.lua
